@@ -1,5 +1,5 @@
 <div align="center">
-  <img src=".github/icon.png" alt="ReCap.WebKit" width="256" />
+  <img src=".github/res/icon2.png" alt="ReCap.WebKit" width="256" />
 </div>
 
 <h1 align="center">ReCap.WebKit</h1>
