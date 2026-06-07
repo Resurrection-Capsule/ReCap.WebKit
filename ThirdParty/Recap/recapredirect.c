@@ -121,6 +121,27 @@ const RecapRedirectConfig *RecapRedirectGet(void)
         fclose(fp);
         RecapRedirectParse(buf, &g_cfg);
     }
+    else
+    {
+        /* First run: write a commented recap.cfg with the defaults next to the DLL, so users have
+           a file to edit (best-effort — if the write fails we still run on the in-memory defaults). */
+        FILE *out = fopen(path, "wb");
+        if (out)
+        {
+            static const char kDefault[] =
+                "# ReCap.WebKit redirect — point Darkspore's web layer at a ReCap server.\r\n"
+                "# Auto-generated with the defaults on first run; edit as needed.\r\n"
+                "#\r\n"
+                "# host:       dotted IPv4 of the ReCap server (127.0.0.1 = local).\r\n"
+                "# http_port:  ReCap REST port (default 8033).\r\n"
+                "# ssl_bypass: 1 = accept the server's self-signed certificate. Default 1.\r\n"
+                "host=127.0.0.1\r\n"
+                "http_port=8033\r\n"
+                "ssl_bypass=1\r\n";
+            fwrite(kDefault, 1, sizeof(kDefault) - 1, out);
+            fclose(out);
+        }
+    }
     return &g_cfg;
 }
 #endif /* RECAP_NO_WIN32 */

@@ -44,16 +44,16 @@ jobs:
       - name: Stage package
         shell: pwsh
         run: |
+          # The package is a drop-in pair: the two DLLs go next to Darkspore.exe. recap.cfg is not
+          # shipped — the DLL writes a commented default on first run; edit it only to change host.
           $stage = "package"
           New-Item -ItemType Directory -Force $stage | Out-Null
           Copy-Item build/EAWebkit.dll "$stage/EAWebkit.dll"
-          Copy-Item recap.cfg.sample   "$stage/recap.cfg"
-          Copy-Item README.md          "$stage/README.md"
           if ("${{ vars.MB132_URL }}") {
             Write-Host "Downloading mb132_x32.dll from MB132_URL"
             Invoke-WebRequest -Uri "${{ vars.MB132_URL }}" -OutFile "$stage/mb132_x32.dll"
           } else {
-            Write-Host "MB132_URL not set — packaging without mb132_x32.dll (obtain it separately)."
+            Write-Host "::warning::MB132_URL not set — packaging EAWebkit.dll only (mb132_x32.dll missing)."
           }
           Get-ChildItem $stage
 
