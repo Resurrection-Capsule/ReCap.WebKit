@@ -11,6 +11,14 @@ if(NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
                         "Run from an x86 MSVC dev prompt before invoking CMake.")
 endif()
 
+# Static CRT (/MT) for every target — the redistributable DLL must not depend on a Visual C++
+# runtime DLL on the player's machine. MUST be set BEFORE any add_library so the fetched Detours
+# target also inherits /MT (otherwise it links /MD and the final link fails with unresolved
+# __except_handler4_common). CMP0091 (NEW since 3.15) routes this property. NOTE: the C++ standard
+# is deliberately set AFTER the Detours block so Detours keeps the compiler default — under C++23 it
+# hits C2362 (goto crossing initialization) in creatwth.cpp.
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 # --- Microsoft Detours (x86) — runtime ws2_32/cert/DPI/WM_QUIT trampolines -------------------
 # Prefer a prebuilt local tree (fast local dev); otherwise fetch + compile Detours from source
 # so the build is self-contained on a clean machine / CI runner (no hardcoded path, no nmake).
@@ -47,12 +55,9 @@ else()
     message(STATUS "ReCap.WebKit: building Detours from source (FetchContent v4.0.1)")
 endif()
 
+# C++ standard for OUR targets only (set after Detours so Detours keeps the compiler default).
 set(CMAKE_CXX_STANDARD 23)            # bump to 26 when the toolchain supports it (/std:c++latest below)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# Static CRT (/MT) for every target incl. fetched Detours — the redistributable DLL must not
-# depend on a VC runtime DLL on the player's machine. CMP0091 (NEW since 3.15) routes this.
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 # --- Sources --------------------------------------------------------------------------------
 set(RECAP_SRC
