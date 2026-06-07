@@ -24,6 +24,7 @@
 #include "recapredirect.h"
 #include "ReCapHooks.h"
 #include "ReCapLog.h"
+#include "LocaleUnlock.h"
 #pragma intrinsic(_ReturnAddress)
 
 /* exe ProtoSSL offsets from image base 0x00400000 (retail 5.3.0.127). */
@@ -209,6 +210,7 @@ extern "C" void RecapHooksInstall(void)
     Real_VerifyCert = (VerifyCertFn)(base + RECAP_VERIFYCERT_OFFSET);
     Real_Wildcard   = (WildcardFn)(base + RECAP_WILDCARDMATCH_OFFSET);
     s_certHooked = (c->bSslBypass != 0);
+    RecapLocaleUnlockPrepare(base);
 
     DetourTransactionBegin();
     DetourUpdateThread(GetCurrentThread());
@@ -221,6 +223,8 @@ extern "C" void RecapHooksInstall(void)
     }
     /* WM_QUIT re-post fix (Play/Exit/Close): mb132's nested pump eats the launcher's quit msg */
     DetourAttach(&(PVOID&)Real_PeekMessageW, (PVOID)Hook_PeekMessageW);
+    /* Locale unlocker: register every Data/Locale/<code> folder (e.g. pt-br) at resolver time */
+    RecapLocaleUnlockAttach();
 
     /* DPI source neutralization for mb (caller-filtered). GetDeviceCaps is always present; the
        per-monitor APIs exist only on Win10 1607 / Win8.1 — resolve + attach what's there. */
@@ -256,6 +260,7 @@ extern "C" void RecapHooksUninstall(void)
         DetourDetach(&(PVOID&)Real_Wildcard,   (PVOID)Hook_Wildcard);
     }
     DetourDetach(&(PVOID&)Real_PeekMessageW, (PVOID)Hook_PeekMessageW);
+    RecapLocaleUnlockDetach();
     if (Real_GetDeviceCaps)    DetourDetach(&(PVOID&)Real_GetDeviceCaps,    (PVOID)Hook_GetDeviceCaps);
     if (Real_GetDpiForWindow)  DetourDetach(&(PVOID&)Real_GetDpiForWindow,  (PVOID)Hook_GetDpiForWindow);
     if (Real_GetDpiForSystem)  DetourDetach(&(PVOID&)Real_GetDpiForSystem,  (PVOID)Hook_GetDpiForSystem);

@@ -82,6 +82,7 @@ set(RECAP_SRC
     Source/Eastl/assert.cpp
     # Host-process hooks: redirect (ws2_32) + ProtoSSL cert bypass + DPI source + WM_QUIT re-post.
     Source/Hooks/ReCapHooks.cpp
+    Source/Hooks/LocaleUnlock.cpp         # registers Data/Locale/<code> folders as client locales
     ThirdParty/Recap/recapredirect.c      # recap.cfg parser + lazy loader (DirtySDK origin, C)
 )
 
