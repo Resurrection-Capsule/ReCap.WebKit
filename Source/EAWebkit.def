@@ -1,0 +1,5 @@
+; The one symbol Darkspore.exe resolves via GetProcAddress after LoadLibrary("EAWebkit.dll").
+; Verified with: dumpbin /exports on the working EAWebkit.dll -> single export.
+LIBRARY EAWebkit
+EXPORTS
+    CreateEAWebkitInstance

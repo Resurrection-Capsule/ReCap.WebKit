@@ -1,0 +1,10 @@
+build/
+build-*/
+out/
+*.user
+*.dll
+*.exp
+*.lib
+*.pdb
+*.ilk
+third_party/mb132*/

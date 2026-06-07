@@ -1,0 +1,85 @@
+name: build
+
+# Builds the x86 EAWebkit.dll (clean-room, MiniBlink-backed) with MSVC + Ninja.
+# Detours is fetched + compiled from source by CMake (no local path needed — see CMakeLists.txt),
+# so a clean runner builds with zero manual setup.
+#
+# Artifacts: every run uploads ReCapWebKit-<sha>.zip (EAWebkit.dll + recap.cfg + README).
+# Releases:  pushing a tag like v1.0.0 attaches that zip to a GitHub Release.
+#
+# Optional mb132 bundling: set the repository Actions variable MB132_URL to a direct download URL
+# for mb132_x32.dll (e.g. a GitHub Release asset). When set, it is included in the package so the
+# zip is a complete drop-in. When unset, the build still succeeds and ships everything but mb132.
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write   # needed for the release job to attach assets
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v5
+
+      - name: Set up MSVC (x86)
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Stage package
+        shell: pwsh
+        run: |
+          $stage = "package"
+          New-Item -ItemType Directory -Force $stage | Out-Null
+          Copy-Item build/EAWebkit.dll "$stage/EAWebkit.dll"
+          Copy-Item recap.cfg.sample   "$stage/recap.cfg"
+          Copy-Item README.md          "$stage/README.md"
+          if ("${{ vars.MB132_URL }}") {
+            Write-Host "Downloading mb132_x32.dll from MB132_URL"
+            Invoke-WebRequest -Uri "${{ vars.MB132_URL }}" -OutFile "$stage/mb132_x32.dll"
+          } else {
+            Write-Host "MB132_URL not set — packaging without mb132_x32.dll (obtain it separately)."
+          }
+          Get-ChildItem $stage
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReCapWebKit-${{ github.sha }}
+          path: package/**
+          if-no-files-found: error
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ReCapWebKit-${{ github.sha }}
+          path: package
+
+      - name: Zip
+        shell: pwsh
+        run: Compress-Archive -Path package/* -DestinationPath "ReCapWebKit-${{ github.ref_name }}.zip"
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ReCapWebKit-${{ github.ref_name }}.zip
+          generate_release_notes: true
