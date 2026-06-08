@@ -1,7 +1,9 @@
 # ReCap.WebKit redirect — point Darkspore's web layer at a ReCap server.
-# Copy this next to EAWebkit.dll as "recap.cfg".
+# Drop this as "recap.cfg" in %APPDATA%\ReCap (preferred — always writable), or next to
+# EAWebkit.dll (DarksporeBin) as the shipped default. The Hub overrides both by launching
+# Darkspore.exe with -recapServer=<host[:port]>, in which case no file is read.
 #
-# host:       dotted IPv4 of the ReCap server (127.0.0.1 = local).
+# host:       IPv4 or hostname of the ReCap server (127.0.0.1 = local).
 # http_port:  ReCap REST port (default 8033).
 # ssl_bypass: 1 = accept the server's self-signed cert (skip cert/host verification). Default 1.
 host=127.0.0.1
