@@ -24,6 +24,7 @@
 #include "recapredirect.h"
 #include "ReCapHooks.h"
 #include "ReCapLog.h"
+#include "ReCapDevConsole.h"
 #pragma intrinsic(_ReturnAddress)
 
 /* exe ProtoSSL offsets from image base 0x00400000 (retail 5.3.0.127). */
@@ -160,10 +161,15 @@ static HRESULT WINAPI Hook_GetDpiForMonitor(HMONITOR mon, int type, UINT* dpiX, 
    game's own PeekMessageW calls (caller in the exe) pass through. */
 static BOOL WINAPI Hook_PeekMessageW(LPMSG msg, HWND h, UINT a, UINT b, UINT r)
 {
+    void* caller = _ReturnAddress();
+    /* The game's own main loop pumps PeekMessageW from darkspore.exe on the main thread — the
+       clean per-frame point where the dev console binds its listen socket and drains typed
+       command lines. No-op unless RECAP_CONSOLE_PORT opted the console in. */
+    if (RecapAddrInModule(caller, NULL))
+        recap::DevConsolePump();
     BOOL ok = Real_PeekMessageW(msg, h, a, b, r);
     if (ok && msg && msg->message == RECAP_WM_QUIT)
     {
-        void* caller = _ReturnAddress();
         if (RecapAddrInModule(caller, "mb132_x32.dll"))
         {
             PostThreadMessageA(GetCurrentThreadId(), RECAP_WM_QUIT, msg->wParam, msg->lParam);

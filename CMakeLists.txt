@@ -65,6 +65,7 @@ set(RECAP_SRC
     Source/Recap/ReCapMiniBlink.cpp       # MiniBlink backend: paint / input / focus / keyboard
     Source/Recap/ReCapMiniBlinkBackend.cpp
     Source/Recap/ReCapJsBridge.cpp        # JS bridge (RunJsSync / BindJsMethod, sync-getter preinject)
+    Source/Recap/ReCapDevConsole.cpp      # Darkspore dev command console (telnet), opt-in via RECAP_CONSOLE_PORT
     Source/Recap/ReCapLog.cpp             # crash-safe logger + ReCapWebKit data folder
     Source/Raster/EARaster.cpp            # concrete EA::Raster::ISurface (ARGB buffer the game reads)
     Source/Raster/EARasterColor.cpp

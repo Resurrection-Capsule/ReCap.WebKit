@@ -6,7 +6,8 @@
 
 #include <windows.h>
 
-#include "ReCapHooks.h"   // RecapSetDpiAware / RecapHooksInstall / RecapHooksUninstall (extern "C")
+#include "ReCapHooks.h"        // RecapSetDpiAware / RecapHooksInstall / RecapHooksUninstall (extern "C")
+#include "ReCapDevConsole.h"   // recap::DevConsoleInit (opt-in via RECAP_CONSOLE_PORT)
 
 BOOL APIENTRY DllMain(HMODULE, DWORD reason, LPVOID)
 {
@@ -15,6 +16,7 @@ BOOL APIENTRY DllMain(HMODULE, DWORD reason, LPVOID)
         ::OutputDebugStringA("[ReCap.WebKit] DllMain attach\n");
         RecapSetDpiAware();    // before any window is created -> kills DPI-virtualization blur
         RecapHooksInstall();   // ws2_32 redirect + cert bypass + DPI source + WM_QUIT re-post
+        recap::DevConsoleInit(); // reads RECAP_CONSOLE_PORT; inert unless a dev opts in
     }
     else if (reason == DLL_PROCESS_DETACH)
     {
