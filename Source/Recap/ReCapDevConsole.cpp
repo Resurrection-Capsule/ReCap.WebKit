@@ -20,6 +20,7 @@
 
 #include "ReCapDevConsole.h"
 #include "ReCapLog.h"
+#include "recapredirect.h"   // recap.cfg console_port (RecapRedirectGet)
 
 namespace {
 
@@ -117,14 +118,25 @@ namespace recap {
 
 void DevConsoleInit()
 {
+    // Primary source: recap.cfg `console_port` (0/absent = disabled). Env var RECAP_CONSOLE_PORT
+    // overrides it — handy when the Hub launches with -recapServer (which bypasses the cfg file).
+    unsigned port = 0;
+    const RecapRedirectConfig* cfg = RecapRedirectGet();
+    if (cfg && cfg->uConsolePort > 0 && cfg->uConsolePort <= 65535)
+        port = cfg->uConsolePort;
+
     char buf[16];
     DWORD n = GetEnvironmentVariableA("RECAP_CONSOLE_PORT", buf, sizeof(buf));
-    if (n == 0 || n >= sizeof(buf)) return;      // unset / oversized -> disabled
-    int p = atoi(buf);
-    if (p <= 0 || p > 65535) return;
+    if (n > 0 && n < sizeof(buf))
+    {
+        int p = atoi(buf);
+        if (p > 0 && p <= 65535) port = static_cast<unsigned>(p);
+    }
+
+    if (port == 0) return;                        // opt-in only
     g_base = reinterpret_cast<unsigned char*>(GetModuleHandleA(nullptr));
     if (!g_base) return;
-    g_port    = static_cast<unsigned>(p);
+    g_port    = port;
     g_enabled = true;
     MbLogf("[DevConsole] enabled on port %u (base=%p)", g_port, static_cast<void*>(g_base));
 }

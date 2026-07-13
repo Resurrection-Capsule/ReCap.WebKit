@@ -8,9 +8,10 @@
    from the ship build. We rebuild the missing start on the game's main thread, then feed typed
    lines to the game's own command executor — the exact path localCheats.txt uses.
 
-   Enable with env var RECAP_CONSOLE_PORT=<port> (unset = disabled). Connect a raw TCP client
-   (ncat / PuTTY-Raw) and type Darkspore console commands (see, in the ReCap repo,
-   docs/architecture/research/DARKSPORE_CHEAT_COMMANDS.md), e.g. `app -pause`, `state -list`.
+   Enable via recap.cfg `console_port=<port>` (0/absent = disabled); env var RECAP_CONSOLE_PORT
+   overrides it. Connect a raw TCP client (ncat / PuTTY-Raw) and type Darkspore console commands
+   (see, in the ReCap repo, docs/architecture/research/DARKSPORE_CHEAT_COMMANDS.md), e.g.
+   `app -pause`, `state -list`.
 
    Contract proven live 2026-07-13 (x32dbg on retail 5.3.0.127) — see, in the ReCap repo,
    docs/architecture/research/CONSOLE_REACTIVATION_FEASIBILITY.md. */
