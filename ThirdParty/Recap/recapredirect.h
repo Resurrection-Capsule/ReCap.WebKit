@@ -7,9 +7,10 @@ extern "C" {
 
 typedef struct RecapRedirectConfig
 {
-    unsigned int uHostAddr;   /* assembled (a<<24)|(b<<16)|(c<<8)|d, e.g. 0x7F000001 = 127.0.0.1 */
-    unsigned int uHttpPort;   /* HTTP target port (default 8033) */
-    int          bSslBypass;  /* nonzero = skip cert/host verification (default 1) */
+    unsigned int uHostAddr;    /* assembled (a<<24)|(b<<16)|(c<<8)|d, e.g. 0x7F000001 = 127.0.0.1 */
+    unsigned int uHttpPort;    /* HTTP target port (default 8033) */
+    int          bSslBypass;   /* nonzero = skip cert/host verification (default 1) */
+    unsigned int uConsolePort; /* dev telnet console listen port; 0 = disabled (default 0) */
 } RecapRedirectConfig;
 
 /* Pure parser: applies key=value lines from pText onto pCfg (which must already hold

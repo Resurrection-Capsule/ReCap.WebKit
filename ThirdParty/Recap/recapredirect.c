@@ -79,6 +79,10 @@ void RecapRedirectParse(const char *pText, RecapRedirectConfig *pCfg)
             {
                 int ok; unsigned int v = recap_parse_uint(val, &ok); if (ok) pCfg->bSslBypass = (v != 0);
             }
+            else if (recap_streq_n(key, "console_port", 13))
+            {
+                int ok; unsigned int v = recap_parse_uint(val, &ok); if (ok) pCfg->uConsolePort = v;
+            }
         }
         if (*pNL == 0) break;
         pLine = pNL + 1;
@@ -226,6 +230,7 @@ const RecapRedirectConfig *RecapRedirectGet(void)
     g_cfg.uHostAddr = 0x7F000001u;   /* 127.0.0.1 */
     g_cfg.uHttpPort = 8033u;
     g_cfg.bSslBypass = 1;
+    g_cfg.uConsolePort = 0u;         /* dev telnet console off by default */
     g_loaded = 1;                    /* set early: never retry, never crash-loop */
 
     /* (1) primary path: the server picked in the Hub/launcher arrives as a launch arg, so no file
@@ -263,9 +268,12 @@ const RecapRedirectConfig *RecapRedirectGet(void)
                     "# host:       IPv4 or hostname of the ReCap server (127.0.0.1 = local).\r\n"
                     "# http_port:  ReCap REST port (default 8033).\r\n"
                     "# ssl_bypass: 1 = accept the server's self-signed certificate. Default 1.\r\n"
+                    "# console_port: dev telnet command console listen port (0/absent = off). Note the\r\n"
+                    "#   Hub's -recapServer launch skips this file, so it applies to manual launches.\r\n"
                     "host=127.0.0.1\r\n"
                     "http_port=8033\r\n"
-                    "ssl_bypass=1\r\n";
+                    "ssl_bypass=1\r\n"
+                    "# console_port=9200\r\n";
                 fwrite(kDefault, 1, sizeof(kDefault) - 1, out);
                 fclose(out);
             }
